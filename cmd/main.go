@@ -61,8 +61,10 @@ func ParseMessage(message string) {
 
 }
 
-var oauth := ""
-var nick := ""
+const (
+	oauth = ""
+	nick = ""
+)
 
 
 func main() {
