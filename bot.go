@@ -1,29 +1,43 @@
 package twitchbot
 
 import (
+	"fmt"
 	"log"
+	"net"
+	"time"
 )
 
-
 type Bot struct {
-	server  string
-	port    string
-	nick    string
-	channel string
-	conn    net.Conn
+	Server  string
+	Port    string
+	Nick    string
+	Channel string
+	Conn    net.Conn
+	Pass    string
 }
 
 type Message struct {
-  raw string
-  channel string
-  user string
+	raw     string
+	channel string
+	user    string
 }
-
-
-func NewMessage(
 
 func (bot *Bot) ConsoleInput() {
 	// _ := bufio.NewReader(os.Stdin)
+
+}
+
+func (bot *Bot) SendMsg(message string) {
+	fmt.Fprintln(bot.Conn, message)
+	log.Print(message)
+}
+
+func (bot *Bot) Chat(message string) {
+	msg := fmt.Sprintf("PRIVMSG #%s :%s", bot.Channel, message)
+	bot.SendMsg(msg)
+}
+
+func (bot *Bot) ParseLine(message string) {
 
 }
 
@@ -31,17 +45,20 @@ func (bot *Bot) Connect() {
 
 	var err error
 	log.Printf("Attempting to connect to server...\n")
-	bot.conn, err = net.Dial("tcp", bot.server+":"+bot.port)
+	bot.Conn, err = net.Dial("tcp", bot.Server+":"+bot.Port)
 	if err != nil {
 		log.Printf("Unable to connect to Twitch IRC server! Reconnecting in 10 seconds...\n")
 		time.Sleep(10 * time.Second)
 		bot.Connect()
 	}
 
-	log.Printf("Connected to IRC server %s\n", bot.server)
-}
+	log.Printf("Connected to IRC server %s\n", bot.Server)
 
-func (bot *Bot) Chat(message string) {
-	log.Fprintf(bot.conn, message+"\r\n")
-	log.Printf(message + "\r\n")
+	bot.SendMsg(fmt.Sprintf("USER %s 8 * :%s", bot.Nick, bot.Nick))
+	bot.SendMsg(fmt.Sprintf("PASS %s", bot.Pass))
+	bot.SendMsg(fmt.Sprintf("NICK %s", bot.Nick))
+	bot.SendMsg(fmt.Sprintf("JOIN #%s", bot.Channel))
+	bot.SendMsg("CAP REQ :twitch.tv/membership")
+	bot.SendMsg("CAP REQ :twitch.tv/tags")
+	bot.SendMsg("CAP REQ :twitch.tv/commands")
 }

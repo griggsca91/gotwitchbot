@@ -1,52 +1,40 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	//	"os"
 	"bufio"
+	"log"
 	"net/textproto"
 	"twitchbot"
 )
 
 const (
 	oauth = ""
-	nick  = ""
+	nick  = "bad_hombres_bot"
 )
 
 func main() {
 	bot := &twitchbot.Bot{
-		server:  "irc.twitch.tv",
-		port:    "6667",
-		nick:    nick,
-		channel: "lck1",
-		conn:    nil,
+		Server:  "irc.twitch.tv",
+		Port:    "6667",
+		Nick:    nick,
+		Channel: "03f001",
+		Conn:    nil,
+		Pass:    "oauth:" + oauth,
 	}
-
-	pass := "oauth:" + oauth
 
 	bot.Connect()
 
-	bot.Chat(fmt.Sprintf("USER %s 8 * :%s", bot.nick, bot.nick))
-	bot.Chat(fmt.Sprintf("PASS %s", pass))
-	bot.Chat(fmt.Sprintf("NICK %s", bot.nick))
-	bot.Chat(fmt.Sprintf("JOIN #%s", bot.channel))
-	bot.Chat("CAP REQ :twitch.tv/membership")
-	bot.Chat("CAP REQ :twitch.tv/tags")
-	bot.Chat("CAP REQ :twitch.tv/commands")
-
-	reader := bufio.NewReader(bot.conn)
+	reader := bufio.NewReader(bot.Conn)
 	tp := textproto.NewReader(reader)
 
+	bot.Chat("Hi everyone, I'm bad_hombres bot and I have entered this channel.  I have no commands yet Kappa. Golang RULES!!")
 	for {
 		line, err := tp.ReadLine()
 
 		if err != nil {
-			log.Printf("ERROR")
-			break
+			log.Fatalf("ERROR: %v", err)
 		}
-		log.Println(line)
-
+		bot.ParseLine(line)
 	}
 
 }
