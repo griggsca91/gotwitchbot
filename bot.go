@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"time"
+	"io/ioutil"
+	"encoding/json"
 )
 
 type Bot struct {
@@ -24,6 +26,35 @@ type Message struct {
 
 func (bot *Bot) ConsoleInput() {
 	// _ := bufio.NewReader(os.Stdin)
+
+}
+
+
+func NewWithConfig(filePath string) (*Bot, error) {
+
+	bytes, err := ioutil.ReadFile(filePath)
+
+	if err != nil {
+		return nil, err
+	}
+	
+	var dat map[string]interface{}
+
+	if err = json.Unmarshal(bytes, &dat); err != nil {
+		return nil, err
+	}
+
+	oauth :=  "oauth:" + dat["oauth"].(string)
+	channel := dat["channel"].(string)
+	nick := dat["nick"].(string)
+
+	return &Bot{
+		Server:  "irc.twitch.tv",
+		Port:    "6667",
+		Nick:    nick,
+		Channel: channel,
+		Pass:    oauth,
+	}, nil
 
 }
 

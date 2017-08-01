@@ -7,19 +7,12 @@ import (
 	"twitchbot"
 )
 
-const (
-	oauth = ""
-	nick  = "bad_hombres_bot"
-)
-
 func main() {
-	bot := &twitchbot.Bot{
-		Server:  "irc.twitch.tv",
-		Port:    "6667",
-		Nick:    nick,
-		Channel: "03f001",
-		Conn:    nil,
-		Pass:    "oauth:" + oauth,
+
+	bot, err := twitchbot.NewWithConfig("../bot.conf")
+
+	if err != nil {
+		log.Fatalf("There was an error: %v", err)
 	}
 
 	bot.Connect()
