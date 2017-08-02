@@ -7,6 +7,7 @@ import (
 	"time"
 	"io/ioutil"
 	"encoding/json"
+	"regexp"
 )
 
 type Bot struct {
@@ -16,6 +17,7 @@ type Bot struct {
 	Channel string
 	Conn    net.Conn
 	Pass    string
+	GiphyAPI string
 }
 
 type Message struct {
@@ -29,7 +31,7 @@ func (bot *Bot) ConsoleInput() {
 
 }
 
-
+// Creates a new bot with the settings defined in a configuration file at the filePath location.
 func NewWithConfig(filePath string) (*Bot, error) {
 
 	bytes, err := ioutil.ReadFile(filePath)
@@ -47,6 +49,7 @@ func NewWithConfig(filePath string) (*Bot, error) {
 	oauth :=  "oauth:" + dat["oauth"].(string)
 	channel := dat["channel"].(string)
 	nick := dat["nick"].(string)
+	giphyAPI := dat["giphy_api"].(string)
 
 	return &Bot{
 		Server:  "irc.twitch.tv",
@@ -54,24 +57,41 @@ func NewWithConfig(filePath string) (*Bot, error) {
 		Nick:    nick,
 		Channel: channel,
 		Pass:    oauth,
+		GiphyAPI: giphyAPI,
 	}, nil
 
 }
 
+// SendMsg sends an unformated message to the IRC connection.
 func (bot *Bot) SendMsg(message string) {
 	fmt.Fprintln(bot.Conn, message)
 	log.Print(message)
 }
 
+// Chat sends a PRIVMSG to the channel the bot is connected to.
 func (bot *Bot) Chat(message string) {
 	msg := fmt.Sprintf("PRIVMSG #%s :%s", bot.Channel, message)
 	bot.SendMsg(msg)
 }
 
+// ParseLine parses everyline that the bot encounters.  This is used to execute commands that begin with !
 func (bot *Bot) ParseLine(message string) {
+
+	re := regexp.MustCompile("PRIVMSG #(.*) :!(.*)")
+	results := re.FindAllStringSubmatch(message, -1)	
+
+	if len(results) != 1 {
+		return
+	}
+
+	switch results[0][2] {
+		case "dankmeme":
+			bot.CommandDankMeme()			
+	}
 
 }
 
+// Connect connects the bot to the IRC channel defined in the config file
 func (bot *Bot) Connect() {
 
 	var err error
