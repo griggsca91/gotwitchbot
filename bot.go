@@ -18,6 +18,7 @@ type Bot struct {
 	Conn    net.Conn
 	Pass    string
 	GiphyAPI string
+
 }
 
 type Message struct {
@@ -26,10 +27,6 @@ type Message struct {
 	user    string
 }
 
-func (bot *Bot) ConsoleInput() {
-	// _ := bufio.NewReader(os.Stdin)
-
-}
 
 // Creates a new bot with the settings defined in a configuration file at the filePath location.
 func NewWithConfig(filePath string) (*Bot, error) {
